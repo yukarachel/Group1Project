@@ -1,42 +1,48 @@
 import pygame
 import random
 import os
+import sys
 from pylsl import StreamInlet, resolve_byprop
 
 # Initialize pygame
 pygame.init()
 
 # Set up the screen
-WIDTH, HEIGHT = 600, 200
+WIDTH, HEIGHT = 800, 600
 screen = pygame.display.set_mode((WIDTH, HEIGHT))
-pygame.display.set_caption("Where's waldo")
+pygame.display.set_caption("Where's Waldo")
 
 # Define colors
 WHITE = (255, 255, 255)
 BLACK = (0, 0, 0)
-GRAY = (128, 128, 128)
 
 # Global variables
 waldo_size = 50
-num_sprites_start = 10
+num_other_sprites_start = 7
+num_other_sprites1_start = 7
+num_other_sprites2_start = 7
+num_other_sprites3_start = 7
 font = pygame.font.Font(None, 36)
 
 # Load Waldo sprite
-waldo_sprite = pygame.image.load(
-    os.path.join("sprites", "waldo_sprite.png")
-).convert_alpha()
+waldo_sprite = pygame.image.load(os.path.join("sprites", "waldo_sprite.png")).convert_alpha()
 waldo_sprite = pygame.transform.scale(waldo_sprite, (waldo_size, waldo_size))
 
 # Load other sprites
-other_sprite = pygame.image.load(
-    os.path.join("sprites", "other_sprite.png")
-).convert_alpha()
+other_sprite = pygame.image.load(os.path.join("sprites", "other_sprite.png")).convert_alpha()
 other_sprite = pygame.transform.scale(other_sprite, (waldo_size, waldo_size))
 
-# Load background GIF
-background_sprite = pygame.image.load(
-    os.path.join("sprites", "background_sprite.png")
-).convert_alpha()
+other_sprite1 = pygame.image.load(os.path.join("sprites", "other_sprite1.png")).convert_alpha()
+other_sprite1 = pygame.transform.scale(other_sprite1, (waldo_size, waldo_size))
+
+other_sprite2 = pygame.image.load(os.path.join("sprites", "other_sprite2.png")).convert_alpha()
+other_sprite2 = pygame.transform.scale(other_sprite2, (waldo_size, waldo_size))
+
+other_sprite3 = pygame.image.load(os.path.join("sprites", "other_sprite3.png")).convert_alpha()
+other_sprite3 = pygame.transform.scale(other_sprite3, (waldo_size, waldo_size))
+
+# Load background
+background_sprite = pygame.image.load(os.path.join("sprites", "background_sprite.png")).convert_alpha()
 background_sprite = pygame.transform.scale(background_sprite, (WIDTH, HEIGHT))
 
 # Game variables
@@ -44,124 +50,115 @@ level = 1
 sprites = []
 waldo_pos = (0, 0)
 
-# Shuffle_sprites 
 def shuffle_sprites():
     global sprites, waldo_pos
-    num_sprites = num_sprites_start + (level - 1) * 3
+    num_other_sprites = num_other_sprites_start + (level - 1) * 7  # Increase by 10 each level
+    num_other_sprites1 = num_other_sprites1_start + (level - 1) * 7  # Increase by 10 each level
+    num_other_sprites2 = num_other_sprites2_start + (level - 1) * 7  # Increase by 10 each level
+    num_other_sprites3 = num_other_sprites3_start + (level - 1) * 7  # Increase by 10 each level
     sprites = []
+    occupied_positions = set()
     
     # Place Waldo first
-    waldo_x, waldo_y = random.randint(0, WIDTH - waldo_size), random.randint(0, HEIGHT - waldo_size)
+    while True:
+        waldo_x, waldo_y = random.randint(0, WIDTH - waldo_size), random.randint(0, HEIGHT - waldo_size)
+        grid_x, grid_y = waldo_x // waldo_size, waldo_y // waldo_size
+        if (grid_x, grid_y) not in occupied_positions:
+            occupied_positions.add((grid_x, grid_y))
+            break
+    
     waldo_pos = (waldo_x, waldo_y)
     sprites.append((waldo_sprite, waldo_x, waldo_y, True))  # True means it's Waldo
     
     # Place other sprites
-    for _ in range(num_sprites - 1):
-        x, y = random.randint(0, WIDTH - waldo_size), random.randint(0, HEIGHT - waldo_size)
-        sprites.append((other_sprite, x, y, False))  # False means it's not Waldo
-
-# Start first shuffle
-shuffle_sprites()
-
-running = True
-while running:
-    screen.fill(WHITE)
+    for _ in range(num_other_sprites):
+        while True:
+            x, y = random.randint(0, WIDTH - waldo_size), random.randint(0, HEIGHT - waldo_size)
+            grid_x, grid_y = x // waldo_size, y // waldo_size
+            if (grid_x, grid_y) not in occupied_positions:
+                occupied_positions.add((grid_x, grid_y))
+                sprites.append((other_sprite, x, y, False))
+                break
     
-    # Draw sprites
-    for img, x, y, is_waldo in sprites:
-        screen.blit(img, (x, y))
+    for _ in range(num_other_sprites1):
+        while True:
+            x, y = random.randint(0, WIDTH - waldo_size), random.randint(0, HEIGHT - waldo_size)
+            grid_x, grid_y = x // waldo_size, y // waldo_size
+            if (grid_x, grid_y) not in occupied_positions:
+                occupied_positions.add((grid_x, grid_y))
+                sprites.append((other_sprite1, x, y, False))
+                break
     
-    # Display level
-    level_text = font.render(f"Level: {level}", True, (0, 0, 0))
-    screen.blit(level_text, (10, 10))
+    for _ in range(num_other_sprites2):
+        while True:
+            x, y = random.randint(0, WIDTH - waldo_size), random.randint(0, HEIGHT - waldo_size)
+            grid_x, grid_y = x // waldo_size, y // waldo_size
+            if (grid_x, grid_y) not in occupied_positions:
+                occupied_positions.add((grid_x, grid_y))
+                sprites.append((other_sprite2, x, y, False))
+                break
     
-    pygame.display.flip()
+    for _ in range(num_other_sprites3):
+        while True:
+            x, y = random.randint(0, WIDTH - waldo_size), random.randint(0, HEIGHT - waldo_size)
+            grid_x, grid_y = x // waldo_size, y // waldo_size
+            if (grid_x, grid_y) not in occupied_positions:
+                occupied_positions.add((grid_x, grid_y))
+                sprites.append((other_sprite3, x, y, False))
+                break
+
+def start_screen():
+    screen = pygame.display.set_mode((800, 600))
+    pygame.display.set_caption("Welcome to Where's Waldo!")
+    font = pygame.font.Font(None, 50)
+    text = font.render("Press any key to start", True, (255, 255, 255))
+    text_rect = text.get_rect(center=(400, 300))
     
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            running = False
-        elif event.type == pygame.MOUSEBUTTONDOWN:
-            mx, my = event.pos
-            if waldo_pos[0] <= mx <= waldo_pos[0] + waldo_size and waldo_pos[1] <= my <= waldo_pos[1] + waldo_size:
-                level += 1
-                shuffle_sprites()
+    running = True
+    while running:
+        screen.fill((0, 0, 0))  # Black background
+        screen.blit(text, text_rect)
+        pygame.display.flip()
+        
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            if event.type == pygame.KEYDOWN or event.type == pygame.MOUSEBUTTONDOWN:
+                running = False
+                game_body()
 
-pygame.quit()
+def game_body():
+    global level
+    screen = pygame.display.set_mode((800, 600))
+    pygame.display.set_caption("Game Screen")
+    font = pygame.font.Font(None, 50)
+    shuffle_sprites()
+    
+    running = True
+    while running:
+        screen.fill(WHITE)
+        
+        # Draw sprites
+        for img, x, y, is_waldo in sprites:
+            screen.blit(img, (x, y))
+        
+        # Display level
+        level_text = font.render(f"Level: {level}", True, BLACK)
+        screen.blit(level_text, (10, 10))
+        
+        pygame.display.flip()
+        
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                mx, my = event.pos
+                if waldo_pos[0] <= mx <= waldo_pos[0] + waldo_size and waldo_pos[1] <= my <= waldo_pos[1] + waldo_size:
+                    level += 1
+                    shuffle_sprites()
 
-    # # Connect to LSL stream
-    # streams = resolve_byprop("name", "obci_eeg1")
-    # inlet = StreamInlet(streams[0])
-
-    # running = True
-    # while running:
-    #     for event in pygame.event.get():
-    #         if event.type == pygame.QUIT:
-    #             running = False
-    #         elif event.type == pygame.MOUSEBUTTONDOWN:
-    #             if event.button == 1 and slider_rect.collidepoint(event.pos):
-    #                 slider_dragging = True
-    #         elif event.type == pygame.MOUSEBUTTONUP:
-    #             if event.button == 1:
-    #                 slider_dragging = False
-    #         elif event.type == pygame.MOUSEMOTION:
-    #             if slider_dragging:
-    #                 mouse_y = event.pos[1]
-    #                 threshold = max(
-    #                     0.0, min(15.0, (mouse_y - slider_y) / slider_height * 15.0)
-    #                 )
-
-    #     # Fetch EEG data
-    #     chunk, _ = inlet.pull_chunk()
-    #     if len(chunk) > 0:
-    #         alpha_band_power = sum(data[2] for data in chunk) / len(chunk)
-    #         if (
-    #             alpha_band_power > threshold
-    #             and not is_jumping
-    #             and player_y > HEIGHT - player_size - jump_height
-    #         ):
-    #             is_jumping = True
-
-    #     # Jump if triggered
-    #     if is_jumping:
-    #         if player_y > HEIGHT - player_size - jump_height:
-    #             player_y -= player_speed
-    #         else:
-    #             is_jumping = False
-
-    #     # Update player position
-    #     if not is_jumping and player_y < HEIGHT - player_size:
-    #         player_y += player_speed
-
-    #     # Generate new cactus obstacle
-    #     if len(cacti) == 0 or cacti[-1][0] < WIDTH - 200:
-    #         cacti.append(generate_cactus())
-
-    #     # Move obstacles and check for collisions
-    #     cacti = [
-    #         (cactus_x - player_speed, cactus_y, cactus_width, cactus_height)
-    #         for cactus_x, cactus_y, cactus_width, cactus_height in cacti
-    #         if cactus_x + cactus_width > 0
-    #     ]
-
-    #     for cactus in cacti:
-    #         cactus_x, cactus_y, cactus_width, cactus_height = cactus
-
-    #         # Check for collision with player
-    #         if pygame.Rect(player_x, player_y, player_size, player_size).colliderect(
-    #             pygame.Rect(cactus_x, cactus_y, cactus_width, cactus_height)
-    #         ):
-    #             score -= 20
-    #             # Game over logic can be added here if needed
-    #         else:
-    #             score += 1
-
-    #     # Draw elements
-    #     draw_elements(waldo_sprite, cacti, slider_rect)
-    #     pygame.display.update()
-    #     clock.tick(30)
-
-    # pygame.quit()
-
-
-# if __name__ == "__main__":
-#     main()
+if __name__ == "__main__":
+    start_screen()
+    pygame.quit()
